@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="ball_game.css">
+        <style>
+            body
+            {background-color: slategray;}
+            canvas
+            {background-color: rgb(206, 206, 206);
+            border-color: darkslategrey;
+            border-width: 20px;
+            display: inline;}
+        </style>
+        <script>
+            function init()
+            {
+                obslistx = []
+                obslisty = []
+                time = 1
+                obs = 0
+                clickselect = 0
+                leftwing = 200
+                rightwing = 400
+                obsheight = 100
+                canv = document.querySelector('canvas')
+                ball = canv.getContext('2d')
+                obstacle = canv.getContext('2d')
+                trace = canv.getContext('2d')
+                x=350
+                prevx = 350
+                y=350
+                prevy = 350
+                xim=0
+                yim=0
+                vely=0
+                velx=0
+                gravity = 9.8
+                elasticity = 0.5
+                radius = 15
+                ball.arc(x,y,radius,0,2*Math.PI)
+                ball.fillStyle = "black"
+                ball.fill()
+                gslider = document.getElementById("gravity")
+                
+                rslider = document.getElementById("ballsize")
+                lwslider = document.getElementById("leftwing")
+                rwslider = document.getElementById("rightwing")
+                ohslider = document.getElementById("obsheight")
+                eslider = document.getElementById("elasticity")
+                eslider.oninput = function()
+                {
+                    elasticity = this.value
+                }
+                lwslider.oninput = function()
+                {
+                    leftwing = this.value
+                }
+                rwslider.oninput = function()
+                {
+                    rightwing = this.value
+                }
+                ohslider.oninput = function()
+                {
+                    obsheight = this.value
+                }
+                bbutton = document.getElementById("position")
+                bbutton.onclick = function()
+                {
+                    clickselect = 0
+                }
+                obutton = document.getElementById("obstacle")
+                obutton.onclick = function()
+                {
+                    clickselect = 1
+                }
+                function repeater()
+                {
+                    if(y+20 >= 700)
+                    {
+                        y=700-(radius)
+                        vely = -1*(vely*elasticity)
+                        velx = velx*0.75
+                    }
+                    else
+                    {
+                        vely = vely + gravity
+                        velx = velx*0.95
+                    }
+                    if(x+20 >= 700)
+					{
+						x=700-(radius*2)
+						velx = -1*(velx*elasticity)
+					}
+                    if(x-20 <= 0)
+					{
+						x=0+(radius*2)
+						velx = -1*(velx*elasticity)
+					}
+                    for(let i=0;i<obs;i++)
+                    {
+                        if(x>=(obslistx[i]-(leftwing*0.5*2)) && x <= obslistx[i])
+                        {
+                            if(y>=obslisty[i] && y<=(obslisty[i]+(obsheight*2)))
+                            {
+                                xim = x-(obslistx[i]-(leftwing*0.5*2))
+                                yim = y-obslisty[i]
+                                trueang = Math.atan(yim/xim)
+                                chang = Math.atan((obsheight*2)/leftwing)
+                                yim =(Math.tan(chang))*xim
+                                y =  obslisty[i]-yim
+                                othang = (Math.PI/2)-chang
+                                velx = -1*Math.sin(2*othang)*vely*elasticity
+                                vely = Math.cos(2*othang)*vely
+                                ball.beginPath()
+                                ball.arc(x,y,radius,0,2*Math.PI)
+                                ball.fillStyle = "black"
+                                ball.fill()
+                            }
+                        }
+                        if(x<=(obslistx[i]+(rightwing*0.5)) && x >= obslistx[i])
+                        {
+                            if(y>=obslisty[i] && y<=(obslisty[i]+(obsheight*2)))
+                            {
+                                xim = x-obslistx[i]
+                                yim = y-obslisty[i]
+                                trueang = Math.atan(yim/(xim*-1))
+                                chang = Math.atan(obsheight*2/(-1*rightwing*0.5))
+                                /*if(chang<=(trueang+0.5) && chang>=(trueang-0.5))
+                                {
+                                    velx = velx+-1*((Math.sin(trueang)*Math.cos(trueang)*vely*elasticity)*3)
+                                    vely = -(Math.cos(trueang)*vely*elasticity)
+                                }*/
+                                yim = Math.tan(chang)*-1*xim
+                                y =  obslisty[i]-yim 
+                                othang = (Math.PI/2)-chang
+                                velx = -1*Math.sin(2*othang)*vely*elasticity
+                                vely = Math.cos(2*othang)*vely*elasticity
+                                ball.beginPath()
+                                ball.arc(x,y,radius,0,2*Math.PI)
+                                ball.fillStyle = "black"
+                                ball.fill()
+                            }
+                        }
+                    }
+                    gslider.oninput = function()
+                    {
+                        gravity = this.value*9.8
+                    }
+                    rslider.oninput = function()
+                    {
+                        radius = this.value
+                    }
+                    time = time+1
+                    prevx = x
+                    prevy = y
+                    x = x+velx
+                    y = y+vely
+                    trace.beginPath()
+                    trace.clearRect(0,0,canv.width,canv.height)
+                    trace.moveTo(prevx,prevy)
+                    trace.lineTo((x-radius),y)
+                    trace.lineTo((x+10),y)
+                    trace.closePath()
+                    trace.fillStyle = "gray"
+                    trace.fill()
+                    ball.beginPath()
+                    ball.arc(x,y,radius,0,2*Math.PI)
+				    ball.fillStyle = "black"
+				    ball.fill()
+                    for(let i=0;i<obs;i++)
+                    {
+                        obstacle.beginPath()
+                        obstacle.moveTo((obslistx[i]),(obslisty[i]-(obsheight*2)))
+                        obstacle.lineTo((obslistx[i]+(rightwing*0.5)),(obslisty[i]))
+                        obstacle.lineTo((obslistx[i]-leftwing),(obslisty[i]))
+                        obstacle.closePath()
+                        obstacle.fillStyle = "white"
+                        obstacle.fill()
+                    }
+                }
+                ticker = setInterval(repeater,25)
+                canv.addEventListener(
+                    "click",function()
+                    {
+                        if(clickselect == 0)
+                        {vely = 0
+                        velx = 0
+                        ball.beginPath()
+					    ball.clearRect(0,0,canv.width,canv.height)
+					    x = event.clientX
+					    y = event.clientY
+                        ball.arc(x,y,radius,0,2*Math.PI)
+				        ball.fillStyle = "black"
+				        ball.fill()}
+                        if(clickselect==1)
+                        {
+                            obslistx[obs] = event.clientX
+                            obslisty[obs] = event.clientY
+                            obs = obs+1
+                        }
+                    }
+                )
+            }
+        </script>
+    </head>
+    <body onload="init()">
+        <canvas width="700px" height="700px"></canvas>
+        <label style="position:absolute;left:710px">Ball Size<input type="range" min="10" max="20" value="15" id="ballsize" class="slider"></label>
+        <label style="position:absolute;top:70px;left:710px">Gravity<input type="range" min="0.1" max="2.0" value="1" id="gravity" class="slider" step="0.1"></label>
+        <label style="position:absolute;top:140px;left:710px" >Elasticity<input type="range" min="0" max="0.9" value="0.5" id="elasticity" class="slider" step="0.1"></label>
+        <button style="position:absolute;top:210px;left:710px" id="position">Ball Position</button>
+        <button style="position:absolute;top:210px;left:900px" id="obstacle">Obstacle</button>
+        <label style="position:absolute;top:430px;left:710px">Obstacle Left Wing<input type="range" min="0" max="200" value="200" id="leftwing" class="slider"></label>
+        <label style="position:absolute;top:360px;left:710px">Obstacle Right Wing<input type="range" min="0" max="400" value="400" id="rightwing" class="slider"></label>
+        <label style="position:absolute;top:290px;left:710px">Obstacle Height<input type="range" min="75" max="200" value="100" id="obsheight" class="slider"></label>
+    </body>
+</html>

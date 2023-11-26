@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" 
+        integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="  />
+
+        <!-- AOS CSS link to make the entire quote box appear in a zoom in manner. -->
+        <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+
+        <link rel="stylesheet" href="twitter_quotes.css">
+        <title>Quotes</title>
+    </head>
+    <body>
+        <div class="container">
+            <div class="inner" data-aos="zoom-in">
+                <div class="box">
+                    <p class="number">
+                        <img id="twitter" src="images/twitter-logo-vector-png-clipart-1.png" alt="Twitter" title="Share on Twitter">
+                    </p>
+                    <div class="text">
+                        <i class="quote-left fa-solid fa-quote-left"></i>
+                        <p id="quote" class="quote"></p>
+                        <p id="author" class="author"></p>
+                    </div>
+                    <label class="button">
+                        <p id="nextQuote">Next Quote</p>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- AOS JavaScript link to make the entire quote box appear in a zoom in manner. -->
+        <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+        <script type="text/javascript">
+            let jsonQuoteList;
+            let quote;
+
+            AOS.init();  // Initialise AOS.
+
+            const getNewQuote = () => {
+                /* Get a random whole number between 0 and the length of the list of quotes.
+                 * That way you can traverse through every quote randomly. */
+                const random = Math.floor(Math.random() * jsonQuoteList.length);
+
+                quote = jsonQuoteList[random];
+                document.getElementById('quote').innerText = `${quote.text}`;
+                const author = quote.author == null ? 'Unknown' : quote.author;
+                document.getElementById('author').innerText = `${author}`;
+            };
+
+            const getQuoteList = async () => {
+                const apiUrl = 'https://type.fit/api/quotes';
+
+                try {
+                    const readableStream = await fetch(apiUrl);  // Fetch returns data as ReadableStream.
+                    jsonQuoteList = await readableStream.json();  // Convert ReadableStream into JSON data.
+                    getNewQuote();
+                } catch (error) {}
+            };
+
+            const tweet = () => {
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${quote.text} ${quote.author}`;
+                window.open(twitterUrl);
+            };
+
+            document.getElementById('twitter').addEventListener('click', tweet);
+            document.getElementById('nextQuote').addEventListener('click', getNewQuote);
+            getQuoteList();
+        </script>
+    </body>
+</html>
